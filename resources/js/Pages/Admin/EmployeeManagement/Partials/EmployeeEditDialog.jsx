@@ -21,6 +21,7 @@ const EmployeeEditDialog = ({
     editOpen,
     setEditOpen,
     department_choices,
+    stations,
 }) => {
     if (!editForm) return null;
 
@@ -68,6 +69,43 @@ const EmployeeEditDialog = ({
                             })
                         }
                     />
+                    <div className="relative w-full">
+                        <FloatingInput
+                            label="Station"
+                            icon={Building2}
+                            value={
+                                stations?.find(
+                                    (s) => s.id === editForm.station_id,
+                                )?.name || ""
+                            }
+                            readOnly
+                        />
+                        <div className="absolute right-2 top-0 h-full flex items-center">
+                            <CustomDropdownCheckbox
+                                label="Select Station"
+                                items={stations?.map((s) => s.name) || []}
+                                value={
+                                    stations?.find(
+                                        (s) =>
+                                            s.id ===
+                                            Number(editForm.station_id),
+                                    )?.name
+                                }
+                                onChange={(val) => {
+                                    const selectedStation = stations.find(
+                                        (s) => s.name === val,
+                                    );
+
+                                    setEditForm({
+                                        ...editForm,
+                                        station_id: selectedStation?.id || "",
+                                    });
+                                }}
+                                buttonVariant="white"
+                                iconOnly
+                            />
+                        </div>
+                    </div>
                     <FloatingInput
                         label="Position"
                         icon={Briefcase}
@@ -170,10 +208,10 @@ const EmployeeEditDialog = ({
                                     onSuccess: () => {
                                         setEditOpen(false);
                                         toast.success(
-                                            "Employee updated successfully 🎉"
+                                            "Employee updated successfully 🎉",
                                         );
                                     },
-                                }
+                                },
                             );
                         }}
                     >

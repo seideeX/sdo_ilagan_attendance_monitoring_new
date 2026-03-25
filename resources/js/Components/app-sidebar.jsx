@@ -87,6 +87,11 @@ export function AppSidebar({ active, user, ...props }) {
             </SidebarHeader>
 
             <SidebarContent className="bg-blue-700 text-white rounded-lg m-2 p-2">
+                <div className="px-2 py-2 border-b border-blue-500">
+                    <div className="text-sm font-semibold text-center">
+                        {auth?.user?.employee?.station?.name || "No Station"}
+                    </div>
+                </div>
                 <SidebarGroup>
                     <SidebarMenu>
                         {/* Administrator */}

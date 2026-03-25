@@ -38,6 +38,7 @@ const EmployeeManagement = ({
     employeesList,
     registeredList,
     unregisteredList,
+    stations,
 }) => {
     const [search, setSearch] = useState("");
 
@@ -315,6 +316,7 @@ const EmployeeManagement = ({
             middle_name: employee.middle_name,
             last_name: employee.last_name,
             position: employee.position,
+            station_id: employee.station_id,
             department: employee.department,
             work_type: employee.work_type,
             active_status: employee.active_status,
@@ -367,7 +369,7 @@ const EmployeeManagement = ({
             <Head title="AMS" />
             <main>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <EmployeeRegistration />
+                    <EmployeeRegistration stations={stations} />
 
                     <div className="bg-gradient-to-br from-blue-100 to-white shadow-lg rounded-2xl p-6 border border-gray-100 flex flex-col">
                         <h2 className="text-l font-bold text-gray-800 mb-1 flex items-center gap-2">
@@ -588,6 +590,7 @@ const EmployeeManagement = ({
                     editOpen={editOpen}
                     setEditOpen={setEditOpen}
                     department_choices={department_choices}
+                    stations={stations}
                 />
             </main>
         </AuthenticatedLayout>

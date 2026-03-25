@@ -33,7 +33,7 @@ const department_choices = [
 
 const work_type_choices = ["Full", "Fixed", "Work From Home"];
 
-const EmployeeRegistration = () => {
+const EmployeeRegistration = ({ stations }) => {
     const [form, setForm] = useState({
         first_name: "",
         middle_name: "",
@@ -41,15 +41,15 @@ const EmployeeRegistration = () => {
         position: "",
         department: "",
         work_type: "",
+        station_id: "",
     });
 
     const handleFormChange = (e) => {
         const { name, value } = e.target;
 
-        // Allow letters, spaces, and hyphens for name fields
         if (["first_name", "middle_name", "last_name"].includes(name)) {
-            const regex = /^[A-Za-z\s-]*$/; // Added hyphen
-            if (!regex.test(value)) return; // Ignore invalid input
+            const regex = /^[A-Za-z\s-]*$/;
+            if (!regex.test(value)) return;
         }
 
         setForm({ ...form, [name]: value });
@@ -66,11 +66,13 @@ const EmployeeRegistration = () => {
                     position: "",
                     department: "",
                     work_type: "",
+                    station_id: "",
                 });
 
                 toast.success("Employee added successfully 🎉", {
                     description: `${form.first_name} ${form.last_name} has been registered.`,
                 });
+
                 router.reload({
                     only: [
                         "employeesList",
@@ -90,6 +92,7 @@ const EmployeeRegistration = () => {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {/* First Name */}
                 <FloatingInput
                     label="First Name"
                     icon={User}
@@ -97,6 +100,8 @@ const EmployeeRegistration = () => {
                     value={form.first_name}
                     onChange={handleFormChange}
                 />
+
+                {/* Department */}
                 <div className="relative w-full">
                     <FloatingInput
                         label="Department"
@@ -119,6 +124,7 @@ const EmployeeRegistration = () => {
                     </div>
                 </div>
 
+                {/* Middle Name */}
                 <FloatingInput
                     label="Middle Name"
                     icon={User}
@@ -126,6 +132,8 @@ const EmployeeRegistration = () => {
                     value={form.middle_name}
                     onChange={handleFormChange}
                 />
+
+                {/* Position */}
                 <FloatingInput
                     label="Position"
                     icon={Briefcase}
@@ -133,6 +141,8 @@ const EmployeeRegistration = () => {
                     value={form.position}
                     onChange={handleFormChange}
                 />
+
+                {/* Last Name */}
                 <FloatingInput
                     label="Last Name"
                     icon={User}
@@ -140,6 +150,8 @@ const EmployeeRegistration = () => {
                     value={form.last_name}
                     onChange={handleFormChange}
                 />
+
+                {/* Work Type */}
                 <div className="relative w-full">
                     <FloatingInput
                         label="Work Type"
@@ -163,6 +175,7 @@ const EmployeeRegistration = () => {
                 </div>
             </div>
 
+            {/* Button */}
             <AlertDialog>
                 <div className="cursor-pointer w-full flex justify-center">
                     <AlertDialogTrigger asChild>
@@ -174,7 +187,8 @@ const EmployeeRegistration = () => {
                                 !form.last_name ||
                                 !form.position ||
                                 !form.department ||
-                                !form.work_type
+                                !form.work_type ||
+                                !form.station_id // ✅ required
                             }
                             className="w-full"
                         >
@@ -189,8 +203,7 @@ const EmployeeRegistration = () => {
                             Confirm Add Employee
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to add this employee? This
-                            action will save the employee to the system.
+                            Are you sure you want to add this employee?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
 

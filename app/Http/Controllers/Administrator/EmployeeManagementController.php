@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Administrator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Administrator\Employee;
+use App\Models\Station;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -15,23 +16,40 @@ class EmployeeManagementController extends Controller
      */
     public function index()
     {
-        $employees = Employee::all();
+        $user = auth()->user();
 
-        $employeesWithFingers = Employee::withCount('biometric')->get()
+        // ✅ Get logged-in user's station_id
+        $stationId = $user->employee->station_id;
+
+        // ✅ Filter employees by station
+        $employees = Employee::where('station_id', $stationId)->get();
+
+        $employeesWithFingers = Employee::withCount('biometric')
+            ->where('station_id', $stationId)
+            ->get()
             ->transform(function ($emp) {
                 $emp->available_fingers = 3 - $emp->biometric_count;
                 return $emp;
             });
 
         // Registered and unregistered
-        $registeredEmployees = $employeesWithFingers->filter(fn($e) => $e->biometric_count > 0)->values();
-        $unregisteredEmployees = $employeesWithFingers->filter(fn($e) => $e->biometric_count === 0)->values();
+        $registeredEmployees = $employeesWithFingers
+            ->filter(fn($e) => $e->biometric_count > 0)
+            ->values();
+
+        $unregisteredEmployees = $employeesWithFingers
+            ->filter(fn($e) => $e->biometric_count === 0)
+            ->values();
+
+        // Optional: only show stations if super admin (optional)
+        $stations = Station::select('id', 'name')->get();
 
         return Inertia::render('Admin/EmployeeManagement/EmployeeManagement', [
             'allEmployees' => $employees,
             'employeesList' => $employeesWithFingers,
             'registeredList' => $registeredEmployees,
             'unregisteredList' => $unregisteredEmployees,
+            'stations' => $stations,
         ]);
     }
 
@@ -44,6 +62,7 @@ class EmployeeManagementController extends Controller
             'position' => 'required|string|max:255',
             'department' => 'required|string|max:255',
             'work_type' => 'required|string|max:255',
+            'station_id' => 'required|exists:stations,id', 
         ]);
 
         Employee::create($validated);
@@ -63,6 +82,7 @@ class EmployeeManagementController extends Controller
             'department' => 'required|string|max:255',
             'work_type' => 'required|string|max:255',
             'active_status' => 'required|boolean',
+            'station_id' => 'required|exists:stations,id', 
         ]);
 
         $employee->update($validated);

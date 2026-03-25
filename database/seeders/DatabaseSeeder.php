@@ -8,6 +8,7 @@ use App\Models\Station;
 use App\Models\Administrator\Employee;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Database\Seeders\Convertion;
 use Database\Seeders\MonthlySeeder;
 use Database\Seeders\LeaveCardSeeder;
@@ -18,87 +19,47 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // ✅ Run base seeders
         $this->call([
             Convertion::class,
             StationSeeder::class,
         ]);
 
-        $defaultStation = Station::first();
+        // ✅ Roles
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $staffRole = Role::firstOrCreate(['name' => 'staff']);
 
-        $admin = Role::firstOrCreate(['name' => 'admin']);
-        $staff = Role::firstOrCreate(['name' => 'staff']);
+        // ✅ Get all stations
+        $stations = Station::all();
 
-        // STAFF USER
-        $employee1 = Employee::create([
-            'station_id' => 1,
-            'first_name' => 'Reycarl',
-            'middle_name' => 'Dela Cruz',
-            'last_name' => 'Medico',
-            'position' => 'Administrative Officer 5',
-            'department' => 'ADMINISTRATIVE UNIT',
-            'work_type' => 'Full',
-        ]);
+        foreach ($stations as $station) {
 
-        $user1 = User::create([
-            'email' => 'carl@gmail.com',
-            'password' => Hash::make('123'),
-            'employee_id' => $employee1->id,
-        ]);
-
-        $user1->assignRole($admin);
-
-        Employee::factory(5)->create([
-            'station_id' => Station::inRandomOrder()->first()->id,
-        ])->each(function ($employee) use ($staff) {
-            $user = User::create([
-                'email' => strtolower($employee->first_name . $employee->id . '@mail.com'),
-                'password' => Hash::make('123'),
-                'employee_id' => $employee->id,
+            // 🔥 1 ADMIN PER STATION (with user)
+            $adminEmployee = Employee::create([
+                'station_id' => $station->id,
+                'first_name' => fake()->firstName(),
+                'middle_name' => fake()->lastName(),
+                'last_name' => fake()->lastName(),
+                'position' => 'Administrator',
+                'department' => 'ADMINISTRATIVE UNIT',
+                'work_type' => 'Full',
             ]);
 
-            $user->assignRole($staff);
-        });
-        Employee::factory(5)->create([
-            'station_id' => Station::inRandomOrder()->first()->id,
-        ])->each(function ($employee) use ($staff) {
-            $user = User::create([
-                'email' => strtolower($employee->first_name . $employee->id . '@mail.com'),
+            $adminUser = User::create([
+                'email' => 'admin_' . $station->id . '_' . Str::random(5) . '@mail.com',
                 'password' => Hash::make('123'),
-                'employee_id' => $employee->id,
+                'employee_id' => $adminEmployee->id,
             ]);
 
-            $user->assignRole($staff);
-        });
+            $adminUser->assignRole($adminRole);
 
-        // ADMIN USER
-        $employee2 = Employee::create([
-            'station_id' => 3,
-            'first_name' => 'Xedric',
-            'middle_name' => 'Baingan',
-            'last_name' => 'Alejo',
-            'position' => 'Administrative Officer 5',
-            'department' => 'ICT',
-            'work_type' => 'Full',
-        ]);
+            // 🔥 2 EMPLOYEES PER STATION (NO USER)
+            Employee::factory(1)->create([
+                'station_id' => $station->id,
+            ]);
+        }
 
-        $user2 = User::create([
-            'email' => 'xed@gmail.com',
-            'password' => Hash::make('123'),
-            'employee_id' => $employee2->id,
-        ]);
-
-        $user2->assignRole($admin);
-
-        Employee::factory(5)->create([
-            'station_id' => $defaultStation->id,
-        ]);
-
-        DepartmentHead::create([
-            'department' => 'ict_unit',
-            'employee_id' => $employee2->id,
-            'status' => 'active',
-        ]);
-
+        // ✅ Other seeders
         $this->call([
             MonthlySeeder::class,
             LeaveCardSeeder::class,
