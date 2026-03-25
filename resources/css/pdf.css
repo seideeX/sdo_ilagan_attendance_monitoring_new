@@ -1,0 +1,19 @@
+/* Repeat table headers on each page */
+thead {
+    display: table-header-group;
+}
+
+tfoot {
+    display: table-footer-group;
+}
+
+/* Prevent splitting rows */
+tr {
+    page-break-inside: avoid;
+}
+
+/* Keep each department together */
+.department {
+    page-break-inside: avoid;
+    page-break-after: auto; /* change to 'always' if you want each dept on a new page */
+}
