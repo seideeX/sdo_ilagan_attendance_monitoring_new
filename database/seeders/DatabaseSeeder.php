@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // ✅ Run base seeders
+        // ✅ Base seeders
         $this->call([
             Convertion::class,
             StationSeeder::class,
@@ -34,6 +34,11 @@ class DatabaseSeeder extends Seeder
 
         foreach ($stations as $station) {
 
+            // 🔥 Department rule
+            $department = $station->id == 1
+                ? 'ADMINISTRATIVE UNIT'
+                : 'Not Applicable';
+
             // 🔥 1 ADMIN PER STATION (with user)
             $adminEmployee = Employee::create([
                 'station_id' => $station->id,
@@ -41,7 +46,7 @@ class DatabaseSeeder extends Seeder
                 'middle_name' => fake()->lastName(),
                 'last_name' => fake()->lastName(),
                 'position' => 'Administrator',
-                'department' => 'ADMINISTRATIVE UNIT',
+                'department' => $department,
                 'work_type' => 'Full',
             ]);
 
@@ -56,6 +61,7 @@ class DatabaseSeeder extends Seeder
             // 🔥 2 EMPLOYEES PER STATION (NO USER)
             Employee::factory(1)->create([
                 'station_id' => $station->id,
+                'department' => $department,
             ]);
         }
 

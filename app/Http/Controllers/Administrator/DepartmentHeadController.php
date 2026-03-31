@@ -39,48 +39,43 @@ class DepartmentHeadController extends Controller
             'middle_name',
             'last_name',
             'work_type',
-            'position'
+            'position',
+            'department'
         )->get();
+
+        $assignedDepartments = $dept_heads->pluck('department')->toArray();
 
         return Inertia::render('Admin/DepartmentHead/SchoolandDepartmentHead', [
             'dept_heads' => $dept_heads,
             'employees' => $employees,
+            'assignedDepartments' => $assignedDepartments,
             'queryParams' => request()->query(),
         ]);
     }
 
-    public function store(StoreDepartmentHeadRequest $request)
+  public function store(Request $request)
     {
-        try {
+        $request->validate([
+            'department' => 'required|string',
+            'employee_id' => 'required|exists:employees,id',
+        ]);
 
-            DB::beginTransaction();
+        $exists = DepartmentHead::where('department', $request->department)->first();
 
-            $data = $request->validated();
-
-            $exists = DepartmentHead::where('department', $data['department'])
-                ->where('status', 'active')
-                ->exists();
-
-            if ($exists && $data['status'] === 'active') {
-                throw new \Exception('This department already has an active head.');
-            }
-
-            DepartmentHead::create($data);
-
-            DB::commit();
-
-            return redirect()
-                ->route('departmenthead')
-                ->with('success', 'Department head created successfully.');
-        } catch (Throwable $e) {
-
-            DB::rollBack();
-
-            return redirect()
-                ->back()
-                ->with('error', $e->getMessage());
+        if ($exists) {
+            return back()->withErrors([
+                'department' => 'This department already has a head assigned.'
+            ]);
         }
+
+        DepartmentHead::create([
+            'department' => $request->department,
+            'employee_id' => $request->employee_id,
+        ]);
+
+        return back()->with('success', 'Department head added successfully!');
     }
+
     public function destroy(Request $request, $id)
     {
         try {

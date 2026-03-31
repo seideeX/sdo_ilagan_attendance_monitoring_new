@@ -4,7 +4,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import DepartmentHeadList from "./Partials/DepartmentHeadList";
 import AddDepartmentHeadForm from "./Partials/AddDepartmentHeadForm";
 
-const SchoolandDepartmentHead = ({ dept_heads = [], queryParams = {}, employees }) => {
+const SchoolandDepartmentHead = ({ dept_heads = [], queryParams = {}, employees , assignedDepartments}) => {
     return (
         <AuthenticatedLayout header="School Admin and Department Head Management">
             <Head title="AMS" />
@@ -12,7 +12,9 @@ const SchoolandDepartmentHead = ({ dept_heads = [], queryParams = {}, employees 
                 <DepartmentHeadList
                     dept_heads={dept_heads}
                     queryParams={queryParams}
-                ></DepartmentHeadList>
+                    employees={employees}
+                    assignedDepartments={assignedDepartments}
+                />
             </main>
         </AuthenticatedLayout>
     );

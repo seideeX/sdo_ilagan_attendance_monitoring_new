@@ -21,11 +21,13 @@ import { router } from "@inertiajs/react";
 import { SquarePen, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import ConfirmPasswordDialog from "@/Components/ConfirmPasswordDialog";
+import AddDepartmentHead from "./AddDepartmentHeadForm";
 
 const ITEMS_PER_PAGE = 10;
 
-const DepartmentHeadList = ({ dept_heads, queryParams: rawParams }) => {
+const DepartmentHeadList = ({ dept_heads, queryParams: rawParams, employees,  assignedDepartments }) => {
     const queryParams = rawParams || {};
+    const [openAdd, setOpenAdd] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const totalPages = Math.ceil(dept_heads.length / ITEMS_PER_PAGE);
     const paginatedEmployees = dept_heads.slice(
@@ -47,27 +49,27 @@ const DepartmentHeadList = ({ dept_heads, queryParams: rawParams }) => {
 
     return (
         <div>
+            <AddDepartmentHead
+                open={openAdd}
+                setOpen={setOpenAdd}
+                employees={employees}
+                assignedDepartments={assignedDepartments}
+            />
             <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-bold">
                         Department Head List
                     </h2>
 
                     <Button
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                        onClick={() => {
-                            // 👉 you can open modal or redirect here
-                            router.get(route("departmenthead.create"));
-                        }}
-                    >
-                        + Add
-                    </Button>
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={() => setOpenAdd(true)}
+                >
+                    + Add
+                </Button>
                 </div>
             <Table>
                 <TableHeader>
                     <TableRow className="bg-blue-900 hover:bg-blue-800">
-                        <TableHead className="text-center text-white">
-                            Id
-                        </TableHead>
                         <TableHead className="text-center text-white">
                             Employee Name
                         </TableHead>
@@ -87,9 +89,6 @@ const DepartmentHeadList = ({ dept_heads, queryParams: rawParams }) => {
                     {paginatedEmployees.map((emp) => (
                         <TableRow key={emp.id} className="hover:bg-gray-100">
                             <TableCell className="text-center">
-                                {emp.head.id}
-                            </TableCell>
-                            <TableCell className="text-center">
                                 <div className="flex justify-center items-center gap-2">
                                     {emp.head.full_name}
                                 </div>
@@ -99,15 +98,6 @@ const DepartmentHeadList = ({ dept_heads, queryParams: rawParams }) => {
                             </TableCell>
                             <TableCell className="text-center">
                                 {DEPARTMENT_OPTIONS[emp.department]}
-                            </TableCell>
-                            <TableCell className="text-center">
-                                {emp.head.work_type || "-"}
-                            </TableCell>
-                            <TableCell className="text-center">
-                                <StatusSwitchCell
-                                    emp={emp}
-                                    onStatusUpdated={handleStatusUpdated}
-                                />
                             </TableCell>
                             <TableCell className="flex justify-center gap-2">
                                 <ConfirmPasswordDialog
