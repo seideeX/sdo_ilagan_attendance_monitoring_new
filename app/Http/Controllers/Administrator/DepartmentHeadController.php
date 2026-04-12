@@ -13,14 +13,14 @@ use Throwable;
 
 class DepartmentHeadController extends Controller
 {
-public function index()
+    public function index()
     {
         $dept_heads = DepartmentHead::with([
             'employee:id,first_name,middle_name,last_name,position,department_id,work_type'
         ])
-        ->where('type', 'department_head')
-        ->latest()
-        ->get();
+            ->where('type', 'department_head')
+            ->latest()
+            ->get();
 
         $departments = Department::select('id', 'name')->get();
 
@@ -36,7 +36,7 @@ public function index()
         )->get();
 
         $assignedDepartments = $dept_heads
-            ->map(fn ($h) => $h->employee?->department_id)
+            ->map(fn($h) => $h->employee?->department_id)
             ->filter()
             ->unique()
             ->values()
@@ -52,12 +52,20 @@ public function index()
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'employee_id' => 'required|exists:employees,id',
         ]);
 
-        $employee = Employee::findOrFail($request->employee_id);
+        $employee = Employee::findOrFail($validated['employee_id']);
 
+        // 🚫 Ensure employee has a department
+        if (!$employee->department_id) {
+            return back()->withErrors([
+                'employee' => 'Selected employee is not assigned to any department.'
+            ]);
+        }
+
+        // 🚫 Prevent duplicate department head per department
         $exists = DepartmentHead::where('type', 'department_head')
             ->whereHas('employee', function ($q) use ($employee) {
                 $q->where('department_id', $employee->department_id);
@@ -70,6 +78,18 @@ public function index()
             ]);
         }
 
+        // 🚫 Prevent same employee from being assigned twice
+        $alreadyAssigned = DepartmentHead::where('employee_id', $employee->id)
+            ->where('type', 'department_head')
+            ->exists();
+
+        if ($alreadyAssigned) {
+            return back()->withErrors([
+                'employee' => 'This employee is already assigned as a department head.'
+            ]);
+        }
+
+        // ✅ Create
         DepartmentHead::create([
             'employee_id' => $employee->id,
             'type' => 'department_head',
