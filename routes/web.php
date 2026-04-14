@@ -6,7 +6,7 @@ use App\Http\Controllers\Administrator\{
     EmployeeManagementController,
     TardinessRecordController,
     AttendanceManagementController,
-    DepartmentHeadAndSchoolAdminController,
+    DepartmentHeadController,
 };
 use App\Http\Controllers\FingerprintController;
 use App\Http\Controllers\HumanResource\{
@@ -95,9 +95,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::put('/sickleaveupdate', [SickLeaveController::class, 'update'])->name('sick-leave.update');
 
     // Department Heads
-    Route::get('/departmentheadsandschooladmin', [DepartmentHeadAndSchoolAdminController::class, 'index'])->name('departmenthead');
-    Route::post('/departmentheadsandschooladmin/depheadstore', [DepartmentHeadAndSchoolAdminController::class, 'departmentheadStore'])->name('departmenthead.store');
-    Route::delete('/departmentheadsandschooladmin/delete/{id}', [DepartmentHeadAndSchoolAdminController::class, 'destroy'])->name('departmenthead.destroy');
+    Route::get('/departmentheadsandschooladmin', [DepartmentHeadController::class, 'index'])->name('departmenthead');
+    Route::post('/departmentheadsandschooladmin/depheadstore', [DepartmentHeadController::class, 'storeHead'])->name('departmenthead.storeHead');
+    Route::post('/addDepartment', [DepartmentHeadController::class, 'storeDepartment'])->name('department.storeDepartment');
+    Route::delete('/departmentheadsandschooladmin/delete/{id}', [DepartmentHeadController::class, 'destroy'])->name('departmenthead.destroy');
 
     Route::middleware(['auth'])->group(function () {
         Route::get('/employee/locator-slip', [LocatorSlipController::class, 'index'])

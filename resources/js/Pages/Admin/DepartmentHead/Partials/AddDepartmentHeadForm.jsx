@@ -1,113 +1,203 @@
-import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DEPARTMENT_OPTIONS, normalizeDepartment } from "@/constants";
-import { router } from "@inertiajs/react";
+import React, { useState, useEffect, useMemo } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { router, usePage } from "@inertiajs/react";
+import { Search, Check } from "lucide-react";
+import FloatingInput from "@/components/floating-input";
+import { toast } from "sonner";
 
 const AddDepartmentHeadForm = ({
     open,
     setOpen,
     employees = [],
-    assignedDepartments = [],
+    departments = [],
+    preselectedDept = null,
 }) => {
     const [selectedDept, setSelectedDept] = useState("");
-    const [selectedEmployee, setSelectedEmployee] = useState("");
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
+    const [search, setSearch] = useState("");
 
-    const availableDepartments = Object.entries(DEPARTMENT_OPTIONS).filter(
-        ([key]) => !assignedDepartments.includes(key)
-    );
+    // ✅ Set department when opened
+    useEffect(() => {
+        if (open) {
+            setSelectedDept(preselectedDept || "");
+            setSelectedEmployee(null);
+            setSearch("");
+        }
+    }, [open, preselectedDept]);
 
-    const filteredEmployees = employees.filter(
-        (emp) => normalizeDepartment(emp.department) === selectedDept
-    );
+    // ✅ Get department name
+    const deptName = departments.find((d) => d.id == selectedDept)?.name || "";
 
-    // 💥 SUBMIT
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    // ✅ Filter employees by department + search
+    const filteredEmployees = useMemo(() => {
+        return employees
+            .filter((emp) => emp.department_id == selectedDept)
+            .filter((emp) =>
+                `${emp.first_name} ${emp.last_name}`
+                    .toLowerCase()
+                    .includes(search.toLowerCase()),
+            );
+    }, [employees, selectedDept, search]);
 
-        router.post(route("departmenthead.store"), {
-            employee_id: selectedEmployee,
-            type: "department_head",
-        }, {
-            onSuccess: () => {
-                setOpen(false);
-                setSelectedDept("");
-                setSelectedEmployee("");
-            }
-        });
+    const flash = usePage().props.flash;
+
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+    }, [flash?.success, flash?.error]);
+
+    const handleSubmit = () => {
+        if (!selectedEmployee) return;
+
+        router.post(
+            route("departmenthead.storeHead"),
+            {
+                employee_id: selectedEmployee.id,
+            },
+            {
+                onSuccess: () => setOpen(false),
+            },
+        );
     };
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Add Department Head</DialogTitle>
+                    <DialogTitle>Assign Department Head</DialogTitle>
+                    <DialogDescription>
+                        Select an employee to assign as department head.
+                    </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-
-                    {/* Department */}
-                    <div>
-                        <label className="block mb-1 font-medium">
-                            Select Department
-                        </label>
-
-                        <select
-                            className="w-full border rounded p-2"
-                            value={selectedDept}
-                            onChange={(e) => {
-                                setSelectedDept(e.target.value);
-                                setSelectedEmployee(""); // reset employee
-                            }}
-                        >
-                            <option value="">Select Department</option>
-
-                            {availableDepartments.map(([key, label]) => (
-                                <option key={key} value={key}>
-                                    {label}
-                                </option>
-                            ))}
-                        </select>
+                <div className="space-y-4">
+                    {/* DEPARTMENT DISPLAY */}
+                    <div className="mb-5">
+                        <p className="text-sm text-gray-500 mb-2">
+                            Department:
+                        </p>
+                        <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-md text-sm font-medium">
+                            {deptName}
+                        </span>
                     </div>
 
-                    {/* Employee */}
-                    <div>
-                        <label className="block mb-1 font-medium">
-                            Select Employee
-                        </label>
+                    <FloatingInput
+                        label="Search employee"
+                        icon={Search}
+                        name="search"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
 
-                        <select
-                            className="w-full border rounded p-2"
-                            value={selectedEmployee}
-                            onChange={(e) => setSelectedEmployee(e.target.value)}
-                            disabled={!selectedDept}
-                        >
-                            <option value="">
-                                {selectedDept
-                                    ? "Select Employee"
-                                    : "Select department first"}
-                            </option>
+                    {/* EMPLOYEE LIST */}
+                    <div className="border rounded-md h-[180px] overflow-y-auto divide-y divide-gray-100 bg-blue-50 border border-blue-500">
+                        {filteredEmployees.length > 0 ? (
+                            filteredEmployees.map((emp) => (
+                                <div
+                                    key={emp.id}
+                                    onClick={() => setSelectedEmployee(emp)}
+                                    className="flex items-center justify-between gap-3 p-3 cursor-pointer hover:bg-gray-100 transition"
+                                >
+                                    {/* LEFT SIDE */}
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-xs font-bold">
+                                            {emp.first_name[0]}
+                                            {emp.last_name[0]}
+                                        </div>
 
-                            {filteredEmployees.map((emp) => (
-                                <option key={emp.id} value={emp.id}>
-                                    {emp.first_name} {emp.last_name}
-                                </option>
-                            ))}
-                        </select>
+                                        <div>
+                                            <div className="text-sm font-medium">
+                                                {emp.first_name} {emp.last_name}
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                {emp.position}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {String(selectedEmployee?.id) ===
+                                        String(emp.id) && (
+                                        <div className="ml-auto flex items-center">
+                                            <div className="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center">
+                                                <Check className="w-3 h-3 text-white" />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        ) : (
+                            <div className="p-3 text-sm text-gray-500 text-center">
+                                No employees found
+                            </div>
+                        )}
                     </div>
 
-                    {/* 💥 ADD BUTTON */}
-                    <button
-                        type="submit"
-                        className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-                        disabled={!selectedDept || !selectedEmployee}
-                    >
-                        Add Department Head
-                    </button>
+                    {/* SELECTED EMPLOYEE INFO */}
+                    <div className="border rounded-md p-3 bg-blue-50 border border-blue-500">
+                        {selectedEmployee ? (
+                            <div className="flex items-center gap-3">
+                                {/* Avatar */}
+                                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
+                                    {selectedEmployee.first_name[0]}
+                                    {selectedEmployee.last_name[0]}
+                                </div>
 
-                </form>
+                                {/* Info */}
+                                <div className="flex-1">
+                                    <div className="text-sm font-semibold text-gray-800">
+                                        {selectedEmployee.first_name}{" "}
+                                        {selectedEmployee.last_name}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                        {selectedEmployee.position}
+                                    </div>
+                                </div>
+
+                                {/* Status */}
+                                <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+                                    Selected
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="text-sm text-gray-400 text-center">
+                                No employee selected
+                            </div>
+                        )}
+                    </div>
+
+                    {/* FOOTER BUTTONS */}
+                    <div className="flex justify-end gap-2 pt-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+
+                        <Button
+                            onClick={handleSubmit}
+                            disabled={!selectedEmployee}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                            Assign Head
+                        </Button>
+                    </div>
+                </div>
             </DialogContent>
         </Dialog>
     );
 };
 
-export default AddDepartmentHeadForm;   
+export default AddDepartmentHeadForm;
