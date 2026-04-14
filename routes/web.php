@@ -97,6 +97,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/departmentheadsandschooladmin', [DepartmentHeadController::class, 'index'])->name('departmenthead');
     Route::post('/departmentheadsandschooladmin/depheadstore', [DepartmentHeadController::class, 'storeHead'])->name('departmenthead.storeHead');
     Route::post('/addDepartment', [DepartmentHeadController::class, 'storeDepartment'])->name('department.storeDepartment');
+    Route::put('/updateDepartment/{id}', [DepartmentHeadController::class, 'updateDepartment'])->name('department.updateDepartment');
     Route::delete('/departmentheadsandschooladmin/delete/{id}', [DepartmentHeadController::class, 'destroy'])->name('departmenthead.destroy');
 
     Route::middleware(['auth'])->group(function () {

@@ -20,6 +20,7 @@ import { Building2, AlertTriangle, SquarePen, Trash2 } from "lucide-react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import AddDepartmentModal from "./AddDepartmentModal";
+import EditDepartment from "./EditDepartment";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -28,6 +29,8 @@ const ITEMS_PER_PAGE = 5;
 const DepartmentList = ({ departments = [], dept_heads }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [openDepartmentAddmodal, setopenDepartmentAddmodal] = useState(false);
+    const [openEditDepartment, setOpenEditDepartment] = useState(false);
+    const [selectedDepartment, setSelectedDepartment] = useState(null);
 
     const totalPages = Math.ceil(departments.length / ITEMS_PER_PAGE);
 
@@ -123,7 +126,7 @@ const DepartmentList = ({ departments = [], dept_heads }) => {
     }, []);
 
     return (
-        <div className="flex gap-6">
+        <div className="flex gap-5">
             {/* LEFT SIDE: TABLE ONLY */}
             <div className="w-[55%] rounded-xl p-4 border-2 shadow-lg ">
                 <div className="flex justify-between items-center mb-4">
@@ -134,7 +137,6 @@ const DepartmentList = ({ departments = [], dept_heads }) => {
                         </p>
                     </div>
 
-                    {/* ✅ THIS BUTTON STAYS HERE ONLY */}
                     <Button
                         onClick={() => setopenDepartmentAddmodal(true)}
                         className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -176,9 +178,28 @@ const DepartmentList = ({ departments = [], dept_heads }) => {
                                         <TableCell className="p-3 text-center">
                                             <div className="flex justify-center gap-5">
                                                 {/* EDIT */}
-                                                <Button className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 text-blue-100 hover:bg-blue-800 hover:text-white transition">
+                                                <Button
+                                                    onClick={() => {
+                                                        setSelectedDepartment(
+                                                            dept,
+                                                        );
+                                                        setOpenEditDepartment(
+                                                            true,
+                                                        );
+                                                    }}
+                                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 text-blue-100 hover:bg-blue-800 hover:text-white transition"
+                                                >
                                                     <SquarePen className="w-4 h-4" />
                                                 </Button>
+                                                <EditDepartment
+                                                    open={openEditDepartment}
+                                                    setOpen={
+                                                        setOpenEditDepartment
+                                                    }
+                                                    department={
+                                                        selectedDepartment
+                                                    }
+                                                />
 
                                                 <Button className="w-8 h-8 flex items-center justify-center rounded-full bg-red-200 text-red-600 hover:bg-red-600 hover:text-white transition">
                                                     <Trash2 className="w-4 h-4" />
@@ -250,34 +271,17 @@ const DepartmentList = ({ departments = [], dept_heads }) => {
                 </div>
             </div>
 
-            <div className="w-[50%] space-y-6">
+            <div className="w-[45%] flex flex-col gap-4">
                 {/* 🔷 TOP ROW */}
-                <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-4">
-                    {/* TOTAL CARD */}
-                    <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 shadow-sm flex justify-between items-start">
-                        <div>
-                            <span className="text-s  font-bold mb-2 block">
-                                Total Departments
-                            </span>
-                            <h2 className="text-3xl font-bold text-gray-800 leading-none">
-                                {departments.length}
-                            </h2>
-                        </div>
-
-                        <div className="bg-blue-500/10 p-3 rounded-xl">
-                            <Building2 className="text-blue-600 w-5 h-5" />
-                        </div>
-                    </div>
-
+                <div className="grid grid-cols-1 lg:grid-cols-[50%_50%]">
                     {/* COVERAGE CARD */}
                     <div className="p-5 rounded-2xl bg-white border shadow-sm">
-                        <p className="text-xs text-gray-500 font-medium mb-3">
+                        <div className="text-base mb-6 font-bold">
                             Department Head Coverage
-                        </p>
-
+                        </div>
                         <div className="flex items-center gap-5">
                             {/* DONUT */}
-                            <div className="relative w-28 h-28">
+                            <div className="relative w-32">
                                 <div className="w-full h-full">
                                     <Doughnut
                                         data={

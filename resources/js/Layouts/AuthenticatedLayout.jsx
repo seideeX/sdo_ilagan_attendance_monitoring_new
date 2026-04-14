@@ -73,7 +73,12 @@ export default function AuthenticatedLayout({ header, children }) {
                     <main className="overflow-auto flex-1 p-3">
                         <div className="p-3">
                             {children}
-                            <Toaster richColors position="top-right" />
+                            <Toaster
+                                richColors
+                                position="top-right"
+                                closeButton
+                                duration={4000}
+                            />
                         </div>
                     </main>
                 </div>

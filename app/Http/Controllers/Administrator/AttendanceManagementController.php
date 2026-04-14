@@ -9,6 +9,7 @@ use App\Services\TardinessConvertion\FixedFlexiTardinessService;
 use App\Services\TardinessConvertion\FullFlexiTardinessService;
 use App\Models\EmployeeLeave;
 use Illuminate\Http\Request;
+use App\Models\Department;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Cache;
 
@@ -29,14 +30,14 @@ class AttendanceManagementController extends Controller
     {
         $user = auth()->user();
         $stationId = optional($user->employee)->station_id;
+        $departments = Department::select('id', 'name')->get();
 
         if (!$stationId) {
             abort(403, 'Station not assigned to this user.');
         }
 
         // ✅ Incomplete Attendances (filtered by station + active employees)
-        $incompleteAttendances = Attendance::with([
-            'employee:id,first_name,last_name,work_type,department,station_id,active_status',
+        $incompleteAttendances = Attendance::with(['employee:id,first_name,last_name,work_type,department_id,station_id,active_status',
             'am:id,attendance_id,am_time_in,am_time_out',
             'pm:id,attendance_id,pm_time_in,pm_time_out'
         ])
@@ -61,9 +62,10 @@ class AttendanceManagementController extends Controller
         ->get();
 
         // ✅ Employees (filtered by station + active)
-        $employees = Employee::where('station_id', $stationId)
+        $employees = Employee::with('department:id,name')
+            ->where('station_id', $stationId)
             ->where('active_status', 1)
-            ->select('id', 'first_name', 'last_name', 'work_type', 'department', 'active_status')
+            ->select('id', 'first_name', 'last_name', 'work_type', 'department_id', 'active_status')
             ->get();
 
         // ✅ Employee Leaves (filtered by station + active)
@@ -92,6 +94,7 @@ class AttendanceManagementController extends Controller
         return Inertia::render('Admin/AttendanceManagement/AttendanceManagement', [
             'incomplete_attendances' => $incompleteAttendances,
             'employees' => $employees,
+            'departments' => $departments,
             'attendance_lookup' => $attendanceRecords,
             'employee_leaves' => $employeeLeaves,
         ]);

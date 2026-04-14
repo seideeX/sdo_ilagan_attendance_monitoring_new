@@ -126,4 +126,18 @@ class DepartmentHeadController extends Controller
 
         return back()->with('success', 'Department created successfully!');
     }
+
+    public function updateDepartment(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:departments,name,' . $id,
+        ]);
+
+        $department = Department::findOrFail($id);
+        $department->update([
+            'name' => $validated['name'],
+        ]);
+
+        return back()->with('success', 'Department updated successfully!');
+    }
 }

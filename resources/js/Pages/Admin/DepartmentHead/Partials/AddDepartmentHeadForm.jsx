@@ -83,7 +83,6 @@ const AddDepartmentHeadForm = ({
                 </DialogHeader>
 
                 <div className="space-y-4">
-                    {/* DEPARTMENT DISPLAY */}
                     <div className="mb-5">
                         <p className="text-sm text-gray-500 mb-2">
                             Department:

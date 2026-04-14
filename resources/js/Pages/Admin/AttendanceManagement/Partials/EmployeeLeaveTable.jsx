@@ -41,7 +41,7 @@ const EmployeeLeaveTable = ({ employees, selectedDate }) => {
 
     const handleLeaveChange = (empId, selectedLabel) => {
         const selected = leaveOptions.find(
-            (opt) => opt.label === selectedLabel
+            (opt) => opt.label === selectedLabel,
         );
         setLeaveTypes((prev) => ({
             ...prev,
@@ -95,7 +95,7 @@ const EmployeeLeaveTable = ({ employees, selectedDate }) => {
                 },
                 onFinish: () =>
                     setLoading((prev) => ({ ...prev, [empId]: false })),
-            }
+            },
         );
     };
 
@@ -122,7 +122,7 @@ const EmployeeLeaveTable = ({ employees, selectedDate }) => {
                                     opt.value ===
                                     (leaveTypes.hasOwnProperty(emp.id)
                                         ? leaveTypes[emp.id]
-                                        : emp.leave_type)
+                                        : emp.leave_type),
                             )?.label || "";
 
                         return (
@@ -130,7 +130,9 @@ const EmployeeLeaveTable = ({ employees, selectedDate }) => {
                                 <TableCell>
                                     {emp.first_name} {emp.last_name}
                                 </TableCell>
-                                <TableCell>{emp.department || "-"}</TableCell>
+                                <TableCell>
+                                    {emp.department?.name || "-"}
+                                </TableCell>
                                 <TableCell>
                                     {dayjs(selectedDate).format("DD MMMM")}
                                 </TableCell>
@@ -138,7 +140,7 @@ const EmployeeLeaveTable = ({ employees, selectedDate }) => {
                                     <CustomDropdownCheckbox
                                         label="Select Leave"
                                         items={leaveOptions.map(
-                                            (opt) => opt.label
+                                            (opt) => opt.label,
                                         )}
                                         selected={currentValue}
                                         onChange={(value) =>
@@ -176,7 +178,7 @@ const EmployeeLeaveTable = ({ employees, selectedDate }) => {
                                                     to {emp.first_name}{" "}
                                                     {emp.last_name} on{" "}
                                                     {dayjs(selectedDate).format(
-                                                        "DD MMMM YYYY"
+                                                        "DD MMMM YYYY",
                                                     )}
                                                     ?
                                                 </AlertDialogDescription>

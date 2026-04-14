@@ -134,8 +134,8 @@ const DepartmentHeadList = ({
                                         key={index}
                                         className={`h-[64px] transition ${
                                             !row.head
-                                                ? "bg-red-50 border border-dashed border-red-200"
-                                                : "hover:bg-blue-50"
+                                                ? "bg-gray-100 hover:bg-gray-200"
+                                                : "bg-white hover:bg-blue-50"
                                         }`}
                                     >
                                         {/* EMPLOYEE */}
